@@ -1,118 +1,103 @@
-# 
+# Import necessary modules
+from typing import Dict
+
+# Define basic classes for Bus, Resistor, Load, and Vsource
+class Bus:
+    def __init__(self, name):
+        # Each bus has a name and a voltage value (default to 0.0)
+        self.name = name
+        self.voltage = 0.0  # Default voltage value
+
+class Resistor:
+    def __init__(self, name, bus1, bus2, resistance):
+        # A resistor connects two buses and has a resistance value
+        self.name = name
+        self.bus1 = bus1
+        self.bus2 = bus2
+        self.resistance = resistance
+
+class Load:
+    def __init__(self, name, bus, power, voltage):
+        # A load is connected to a single bus and has a power and voltage rating
+        self.name = name
+        self.bus = bus
+        self.power = power
+        self.voltage = voltage
+
+class Vsource:
+    def __init__(self, name, bus, voltage):
+        # A voltage source connects to a single bus and provides a specified voltage
+        self.name = name
+        self.bus = bus
+        self.voltage = voltage
+
+# Circuit class
 class Circuit:
-    # Step 1: Initialize the circuit
     def __init__(self, name: str):
-        """
-        Initialize a Circuit object with a name and empty dictionaries for components.
-        """
-        self.name = name  # Name of the circuit
-        self.buses = {}  # Dictionary to store bus objects (e.g., {"A": {"voltage": None}})
-        self.resistors = {}  # Dictionary to store resistor objects
-        self.loads = {}  # Dictionary to store load objects
-        self.vsource = None  # Voltage source object
-        self.i = 0.0  # Current flowing through the circuit (default is 0.0 A)
+        # Initialize the circuit with a name and empty dictionaries for components
+        self.name = name
+        self.buses: Dict[str, Bus] = {}
+        self.resistors: Dict[str, Resistor] = {}
+        self.loads: Dict[str, Load] = {}
+        self.vsource: Vsource = None
+        self.i: float = 0.0  # Circuit current
 
-    # Step 2: Add a bus to the circuit
-    def add_bus(self, bus: str):
-        """
-        Add a bus to the circuit.
-        """
-        self.buses[bus] = {"voltage": None}  # Initialize bus with unknown voltage
-        print(f"Bus '{bus}' added to the circuit.")
+    def add_bus(self, name: str):
+        # Add a bus to the circuit if it doesn't already exist
+        if name not in self.buses:
+            self.buses[name] = Bus(name)
 
-    # Step 3: Add a resistor element
-    def add_resistor_element(self, name: str, bus1: str, bus2: str, r: float):
-        """
-        Add a resistor to the circuit between two buses.
-        """
-        if bus1 not in self.buses or bus2 not in self.buses:
-            raise ValueError("Both buses must be added to the circuit before adding a resistor.")
-        self.resistors[name] = {"bus1": bus1, "bus2": bus2, "resistance": r}
-        print(f"Resistor '{name}' with resistance {r}Ω added between '{bus1}' and '{bus2}'.")
+    def add_resistor_element(self, name: str, bus1: str, bus2: str, resistance: float):
+        # Ensure both buses exist before adding the resistor
+        self.add_bus(bus1)
+        self.add_bus(bus2)
+        self.resistors[name] = Resistor(name, bus1, bus2, resistance)
 
-    # Step 4: Add a load element
-    def add_load_element(self, name: str, bus1: str, p: float, v: float):
-        """
-        Add a load to the circuit connected to a specific bus.
-        """
-        if bus1 not in self.buses:
-            raise ValueError("The bus must be added to the circuit before adding a load.")
-        self.loads[name] = {"bus": bus1, "power": p, "voltage": v}
-        print(f"Load '{name}' added to bus '{bus1}' with power {p}W and voltage {v}V.")
+    def add_load_element(self, name: str, bus: str, power: float, voltage: float):
+        # Ensure the bus exists before adding the load
+        self.add_bus(bus)
+        self.loads[name] = Load(name, bus, power, voltage)
 
-    # Step 5: Add a voltage source
-    def add_vsource_element(self, name: str, bus1: str, bus2: str, v: float):
-        """
-        Add a voltage source to the circuit between two buses.
-        """
-        if bus1 not in self.buses or bus2 not in self.buses:
-            raise ValueError("Both buses must be added to the circuit before adding a voltage source.")
-        self.vsource = {"name": name, "bus1": bus1, "bus2": bus2, "voltage": v}
-        print(f"Voltage source '{name}' added with voltage {v}V between '{bus1}' and '{bus2}'.")
+    def add_vsource_element(self, name: str, bus: str, voltage: float):
+        # Ensure the bus exists before adding the voltage source
+        self.add_bus(bus)
+        self.vsource = Vsource(name, bus, voltage)
 
-    # Step 6: Set the current flowing through the circuit
-    def set_i(self, i: float):
-        """
-        Set the current flowing through the circuit.
-        """
-        self.i = i
-        print(f"Current set to {i}A.")
+    def set_i(self, current: float):
+        # Set the current flowing through the circuit
+        self.i = current
 
-    # Step 7: Print the nodal voltages
     def print_nodal_voltage(self):
-        """
-        Print the voltage at each bus in the circuit.
-        """
-        for bus, details in self.buses.items():
-            voltage = details.get("voltage", "Unknown")  # Placeholder for voltage
-            print(f"Bus '{bus}': Voltage = {voltage}")
+        # Print the voltage at each bus in the circuit
+        print("Nodal Voltages:")
+        for bus_name, bus in self.buses.items():
+            print(f"Bus {bus_name}: {bus.voltage:.2f} V")
 
-    # Step 8: Print the circuit current
     def print_circuit_current(self):
-        """
-        Print the current flowing through the circuit.
-        """
-        print(f"Current through the circuit: {self.i}A")
+        # Print the current flowing through the circuit
+        print(f"Circuit Current: {self.i:.2f} A")
 
-# Import the Circuit class (assuming it is implemented in a separate file named circuit.py)
-from Circuit import Circuit
+# Test the Circuit class with simple functionality
+def main():
+    circuit = Circuit("Basic Circuit")  # Create a circuit object
 
-# Step 1: Create an instance of Circuit
-circuit = Circuit("Simple Circuit")
-# Explanation: A new Circuit object is created with the name "Simple Circuit".
-# This initializes the circuit's attributes (buses, resistors, loads, vsource, i) as empty.
+    # Add a voltage source
+    circuit.add_vsource_element("V1", "A", 10.0)  # Voltage source at Bus A with 10V
 
-# Step 2: Add buses to the circuit
-circuit.add_bus("A")  # Add bus "A"
-circuit.add_bus("B")  # Add bus "B"
-# Explanation: The buses dictionary in the circuit is updated to include "A" and "B".
-# Each bus is initialized with a placeholder for voltage, which is currently None.
+    # Add a resistor
+    circuit.add_resistor_element("R1", "A", "B", 100.0)  # Resistor between Bus A and Bus B with 100 ohms
 
-# Step 3: Add a resistor to the circuit
-circuit.add_resistor_element("R1", "A", "B", 100.0)
-# Explanation: A resistor named "R1" with resistance 100Ω is added between buses "A" and "B".
-# The resistor's details (connected buses and resistance) are stored in the resistors dictionary.
+    # Add a load
+    circuit.add_load_element("L1", "B", 50.0, 5.0)  # Load at Bus B with 50W and 5V
 
-# Step 4: Add a load to the circuit
-circuit.add_load_element("L1", "A", 50.0, 10.0)
-# Explanation: A load named "L1" is added to bus "A" with a power consumption of 50W and an operating voltage of 10V.
-# The load's details are stored in the loads dictionary.
+    # Set circuit current
+    circuit.set_i(0.1)  # Current of 0.1A in the circuit
 
-# Step 5: Add a voltage source to the circuit
-circuit.add_vsource_element("VS1", "A", "B", 12.0)
-# Explanation: A voltage source named "VS1" with a voltage of 12V is added between buses "A" and "B".
-# The voltage source details are stored in the vsource attribute.
+    # Display current and nodal voltages
+    circuit.buses["A"].voltage = 10.0  # Set voltage at Bus A
+    circuit.buses["B"].voltage = 5.0   # Set voltage at Bus B
+    circuit.print_circuit_current()  # Print circuit current
+    circuit.print_nodal_voltage()    # Print nodal voltages
 
-# Step 6: Set the circuit current
-circuit.set_i(0.12)
-# Explanation: The current flowing through the circuit is set to 0.12A.
-# This updates the `i` attribute of the circuit.
-
-# Step 7: Print nodal voltages
-circuit.print_nodal_voltage()
-# Explanation: This method iterates through the buses dictionary and prints the voltage at each bus.
-# Since voltage calculation is not yet implemented, the voltage is currently displayed as "Unknown".
-
-# Step 8: Print circuit current
-circuit.print_circuit_current()
-# Explanation: This method prints the total current flowing through the circuit, which was set earlier to 0.12A.
+if __name__ == "__main__":
+    main()
